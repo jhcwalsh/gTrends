@@ -7,12 +7,16 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(sf)
+library(raster)
 library("gtrendsR")
+library("spData")
 library("tidyverse")
 ```
 
 ```{r data download}
 US.inflation.trends<-head(gtrends(keyword="inflation",time="all", geo="US"))
+US.inflation.trends.12m<-head(gtrends(keyword="inflation",time="today 12-m", geo="US"))
 world.inflation.trends<-head(gtrends(keyword="inflation",time="all"))
 
 iot.US<-US.inflation.trends$interest_over_time
@@ -21,7 +25,7 @@ iot.US %>%
     ggplot(aes(x=date,y=hits))+
     geom_line()
 
-US.inflation.trends$related_topics %>%
+US.inflation.trends.12m$related_topics %>%
     filter(related_topics=="top")%>%
     mutate(value=factor(value,levels=rev(as.character(value))),subject=as.numeric(subject))%>%
     top_n(10,value) %>%
@@ -29,5 +33,24 @@ US.inflation.trends$related_topics %>%
     geom_bar(stat='identity',show.legend = F)+
     coord_flip()+
     labs(title="Queries most related with 'inflation'")
+
+ioc<-world.inflation.trends$interest_by_country
+
+countries<-spData::world %>%
+    left_join(y=ioc,by=c("name_long" = "location"),keep=T)
+
+if (requireNamespace("sf", quietly = TRUE)) {
+     library(sf)
+     data(world)
+     # or
+     world <- st_read(system.file("shapes/world.gpkg", package="spData"))
+     
+     plot(world)
+}
+
+library(spData)
+world_sp = as(world, "Spatial")
+world_sf = st_as_sf(world_sp)
+
 
 ```
