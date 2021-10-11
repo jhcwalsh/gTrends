@@ -18,12 +18,40 @@ library("tidyverse")
 US.inflation.trends<-head(gtrends(keyword="inflation",time="all", geo="US"))
 US.inflation.trends.12m<-head(gtrends(keyword="inflation",time="today 12-m", geo="US"))
 world.inflation.trends<-head(gtrends(keyword="inflation",time="all"))
+world.prices.trends<-head(gtrends(keyword="prices",time="all"))
+world.jobs.trends<-head(gtrends(keyword="jobs",time="all"))
+world.hedgefund.trends<-head(gtrends(keyword="hedge funds",time="all"))
+world.albourne.trends<-head(gtrends(keyword="Albourne",time="all"))
+
+
 
 iot.US<-US.inflation.trends$interest_over_time
+iot.albourne<-world.albourne.trends$interest_over_time
+iot.prices<-world.prices.trends$interest_over_time
+iot.jobs<-world.jobs.trends$interest_over_time
+iot.hedgefund<-world.albourne.trends$interest_over_time
 
 iot.US %>%
     ggplot(aes(x=date,y=hits))+
     geom_line()
+
+iot.albourne %>%
+    ggplot(aes(x=date,y=hits))+
+    geom_line()
+
+iot.prices%>%
+    ggplot(aes(x=date,y=hits))+
+    geom_line()
+
+iot.jobs %>%
+    ggplot(aes(x=date,y=hits))+
+    geom_line()
+
+iot.hedgefund %>%
+    ggplot(aes(x=date,y=hits))+
+    geom_line()
+
+
 
 US.inflation.trends.12m$related_topics %>%
     filter(related_topics=="top")%>%
@@ -39,14 +67,8 @@ ioc<-world.inflation.trends$interest_by_country
 countries<-spData::world %>%
     left_join(y=ioc,by=c("name_long" = "location"),keep=T)
 
-if (requireNamespace("sf", quietly = TRUE)) {
-     library(sf)
-     data(world)
-     # or
-     world <- st_read(system.file("shapes/world.gpkg", package="spData"))
-     
-     plot(world)
-}
+tm_shape(countries)+
+    tm_fill("hits")
 
 library(spData)
 world_sp = as(world, "Spatial")
